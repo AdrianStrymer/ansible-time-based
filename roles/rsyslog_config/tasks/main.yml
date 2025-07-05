@@ -1,0 +1,40 @@
+---
+- name: Ensure rsyslog is installed
+  apt:
+    name: rsyslog
+    state: present
+    update_cache: yes
+
+- name: Get current hour
+  command: date +%H
+  register: current_hour
+  changed_when: false
+
+- name: Set rsyslog verbosity level based on time
+  set_fact:
+    rsyslog_template: "{{ 'rsyslog_verbose.conf.j2' if (current_hour.stdout | int >= 8 and current_hour.stdout | int < 18) else 'rsyslog_minimal.conf.j2' }}"
+
+- name: Backup and disable default rsyslog.d configs except time-based.conf
+  shell: |
+    for f in /etc/rsyslog.d/*.conf; do
+      if [ "$(basename "$f")" != "time-based.conf" ]; then
+        mv "$f" "$f.bak"
+      fi
+    done
+  args:
+    executable: /bin/bash
+
+- name: Apply rsyslog config based on time
+  template:
+    src: "{{ rsyslog_template }}"
+    dest: /etc/rsyslog.d/time-based.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart rsyslog
+
+- name: Ensure rsyslog is running
+  service:
+    name: rsyslog
+    state: started
+    enabled: true

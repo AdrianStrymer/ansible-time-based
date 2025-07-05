@@ -1,5 +1,5 @@
 ---
-- name: Adjust Nginx worker_processes based on time
+- name: Adjust configurations based on time
   hosts: ubuntu-01
   become: true
   gather_facts: false
@@ -7,6 +7,9 @@
     - files/vault.yaml
   
   tasks:
-    - name: Run nginx roles
+    - name: Run nginx role
       include_role:
         name: nginx_config
+    - name: Run rsyslog role
+      include_role:
+        name: rsyslog_config
