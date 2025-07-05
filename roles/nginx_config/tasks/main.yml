@@ -1,2 +1,31 @@
 ---
-# tasks file for nginx_config
+- name: Ensure Nginx is installed
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Get current hour
+  command: date +%H
+  register: current_hour
+  changed_when: false
+
+- name: Set worker process count based on time
+  set_fact:
+    worker_processes: "{{ 4 if (current_hour.stdout | int >= 8 and current_hour.stdout | int < 18) else 1 }}"
+
+- name: Template nginx config
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Ensure nginx is running
+  service:
+    name: nginx
+    state: started
+    enabled: true

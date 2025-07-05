@@ -1,0 +1,12 @@
+---
+- name: Adjust Nginx worker_processes based on time
+  hosts: ubuntu-01
+  become: true
+  gather_facts: false
+  vars_files:
+    - files/vault.yaml
+  
+  tasks:
+    - name: Run nginx roles
+      include_role:
+        name: nginx_config

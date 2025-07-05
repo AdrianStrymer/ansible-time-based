@@ -1,2 +1,6 @@
 ---
-# handlers file for nginx_config
+- name: Reload nginx
+  service:
+    name: nginx
+    state: reloaded
+  become: true

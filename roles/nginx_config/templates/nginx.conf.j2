@@ -1,0 +1,21 @@
+user www-data;
+worker_processes {{ worker_processes }};
+pid /run/nginx.pid;
+
+events {
+    worker_connections 768;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+    keepalive_timeout 65;
+    server {
+        listen 80;
+        server_name localhost;
+        location / {
+            return 200 'Nginx config active with {{ worker_processes }} workers\n';
+        }
+    }
+}
